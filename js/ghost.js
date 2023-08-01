@@ -2,10 +2,8 @@
 
 const GHOST = '👻'
 var gGhosts = []
-// var gDeadGhosts = []
-
-
-var gIntervalGhosts
+var gDeadGhosts = []
+var gIntervalGhosts = -1
 
 function createGhosts(board) {
     // DONE: 3 ghosts and an interval
@@ -53,11 +51,12 @@ function moveGhost(ghost) {
     // DONE: return if cannot move
     if (nextCell === WALL) return
     if (nextCell === GHOST) return
+    if (nextCell === PACMAN && gPacman.isSuper) return
 
     // DONE: hitting a pacman? call gameOver
-    if (nextCell === PACMAN) {
-        if (gPacman.isSuper) return
+    if (nextCell === PACMAN && !gPacman.isSuper) {
         gameOver()
+        return
     }
 
     // DONE: moving from current location:
@@ -98,13 +97,18 @@ function removeGhost(location) {
 
     for (var i = 0; i < gGhosts.length; i++) {
         const currGhost = gGhosts[i]
-        if (gGhosts[i].location = location) {
+        if (location.i === currGhost.location.i &&
+            location.j === currGhost.location.j) {
             ghostIdx = i
+            break
         }
     }
-    gGhosts.splice(i, 1);
-    gBoard[gPacman.location.i][gPacman.location.j] = FOOD
-    renderCell(gPacman.location, FOOD)
+    if (ghostIdx === -1) return
+    var deadGhosts = gGhosts.splice(ghostIdx, 1);
+    gDeadGhosts.push(deadGhosts[0])
+    if (deadGhosts[0].currCellContent === FOOD) {
+        updateScore(1)
+    }
 }
 
 function getGhostHTML(ghost) {
@@ -112,18 +116,7 @@ function getGhostHTML(ghost) {
     return `<span style="background-color:${color}">${GHOST}</span>`
 }
 
-// function reviveGhosts(board) {
-//     // DONE: 3 ghosts and an interval
-//     for (var i = 0; i < gDeadGhosts.length; i++) {
-//         reviveGhost(board, i)
-//     }
-
-//     gIntervalGhosts = setInterval(moveGhosts, 1000)
-
-// }
-
-// function reviveGhost(board, ghost) {
-//     gGhosts.push(ghost)
-//     board[ghost.location.i][ghost.location.j] = GHOST
-//     gDeadGhosts.splice(i, 1)
-// }
+function reviveGhost() {
+    gGhosts.push(...gDeadGhosts)
+    gDeadGhosts = []
+}

@@ -3,7 +3,7 @@
 const WALL = '🪨'
 const FOOD = '.'
 const EMPTY = ' '
-const SUPERFOOD = '🍕'
+const SUPER_FOOD = '🍕'
 const CHERRY = '🍒'
 
 const gGame = {
@@ -12,24 +12,27 @@ const gGame = {
 }
 var gBoard
 var gfoodCount
-var gCherryInterval
+var gCherryInterval = -1
 
 
 function onInit() {
+    gGame.isOn = true
+    gGame.score = 0
+    gfoodCount = 56
 
     gBoard = buildBoard()
+
+    clearInterval(gIntervalGhosts)
+    clearInterval(gCherryInterval)
+
     createGhosts(gBoard)
     createPacman(gBoard)
     renderBoard(gBoard)
-    checkFoodCount(gBoard)
-    gCherryInterval = setInterval(addCherry, 15000)
-    
-    gGame.isOn = true
-    gGame.score = 0
-    
-    document.querySelector('.score').innerText = gGame.score
+    // checkFoodCount(gBoard)
 
+    updateScore(0)
     toggleModal(true, true)
+    gCherryInterval = setInterval(addCherry, 15000)
 }
 
 function toggleModal(isOpen, isWin) {
@@ -54,12 +57,13 @@ function buildBoard() {
                 (j === 3 && i > 4 && i < size - 2)) {
                 board[i][j] = WALL
             }
-            if (i === 1 && j === 1) board[i][j] = SUPERFOOD
-            if (i === 1 && j === 8) board[i][j] = SUPERFOOD
-            if (i === 8 && j === 1) board[i][j] = SUPERFOOD
-            if (i === 8 && j === 8) board[i][j] = SUPERFOOD
         }
     }
+
+    board[1][1] = SUPER_FOOD
+    board[1][8] = SUPER_FOOD
+    board[8][1] = SUPER_FOOD
+    board[8][8] = SUPER_FOOD
 
     return board
 }
@@ -89,13 +93,10 @@ function renderCell(location, value) {
 }
 
 function updateScore(diff) {
-    // DONE: update model and dom
-
     // update model
     gGame.score += diff
     // update dom
     document.querySelector('.score').innerText = gGame.score
-
 }
 
 // Counts food on board
@@ -113,6 +114,7 @@ function checkFoodCount(board) {
 function addCherry() {
     var emptyCells = getEmptyCells(gBoard)
     var emptyCell = emptyCells[getRandomIntExclusive(0, emptyCells.length)]
+    if (!emptyCell) return
     // Model
     gBoard[emptyCell.i][emptyCell.j] = CHERRY
     // DOM
@@ -122,20 +124,16 @@ function addCherry() {
 // GameOver
 function gameOver() {
     toggleModal(false, false)
-
     clearInterval(gIntervalGhosts)
     clearInterval(gCherryInterval)
     renderCell(gPacman.location, '🪦')
-
     gGame.isOn = false
 }
 
 // Victory
 function victory() {
     toggleModal(false, true)
-
     clearInterval(gIntervalGhosts)
     clearInterval(gCherryInterval)
-    
     gGame.isOn = false
 }

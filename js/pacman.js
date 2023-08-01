@@ -25,35 +25,27 @@ function onMovePacman(ev) {
 
     // DONE: return if cannot move
     if (nextCell === WALL) return
+    if (nextCell === SUPER_FOOD && gPacman.isSuper) return
+    if (nextCell === SUPER_FOOD) handleSuper()
     if (nextCell === CHERRY) updateScore(10)
     
     if (nextCell === FOOD) {
         updateScore(1)
         gfoodCount--
-        // console.log(gfoodCount);
     }
-
+    
     // DONE: hitting a ghost? call gameOver
     if (nextCell === GHOST) {
-        if (!gPacman.isSuper) {
+        if (gPacman.isSuper) {
+            removeGhost(nextLocation)
+        } else {
             gameOver()
             return
-        } else {
-            return
-            // removeGhost(nextLocation)
         }
     }
+    
+    if (gfoodCount === 0) victory()
 
-    if (nextCell === SUPERFOOD) {
-        if (gPacman.isSuper) return
-        handleSuper()
-    }
-    
-    
-    if (gfoodCount === 0) {
-        victory()
-    }
-    
     // DONE: moving from current location:
     // DONE: update the model
     gBoard[gPacman.location.i][gPacman.location.j] = EMPTY
@@ -72,7 +64,8 @@ function handleSuper() {
     gPacman.isSuper = true
     renderGhosts()
     setTimeout(() => {
-        gPacman.isSuper = false
+        gPacman.isSuper = false,
+        reviveGhost()
     }, 5000)
 }
 
@@ -99,16 +92,3 @@ function getNextLocation(eventKeyboard) {
     }
     return nextLocation
 }
-
-// if (nextCell === GHOST) {
-//     if (gPacman.isSuper) {
-//         removeGhost(nextLocation)
-//         // Model
-//         // gBoard[nextLocation.i][nextLocation.j] = PACMAN
-//         // DOM
-//         // renderCell(gPacman.location, EMPTY)
-//         // renderCell(nextLocation, PACMAN)
-//         return
-//     }
-//     gameOver()
-//     return
